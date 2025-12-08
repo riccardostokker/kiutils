@@ -1,3 +1,10 @@
-[build-system]
-requires = ["setuptools>=42"]
-build-backend = "setuptools.build_meta"
+[project]
+name = "kiutils"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = ["jinja2>=3.1", "sphinx>=9.0", "sphinx-rtd-theme>=3.0"]
