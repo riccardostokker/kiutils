@@ -512,7 +512,7 @@ class Effects:
         object = cls()
         for item in exp:
             if type(item) != type([]):
-                if item == "hide":
+                if item == "hide" or item[0] == "hide":
                     object.hide = True
                 else:
                     continue
