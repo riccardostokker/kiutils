@@ -22,8 +22,9 @@ from typing import Optional, List, Dict
 
 from kiutils.utils.strings import dequote
 
+
 @dataclass
-class Position():
+class Position:
     """The ``position`` token defines the positional coordinates and rotation of an object.
 
     Documentation:
@@ -67,21 +68,24 @@ class Position():
         object.Y = exp[2]
         if len(exp) >= 4:
             # More than four components means X, Y, and either angle or unlocked are present
-            if exp[3] != 'unlocked':
+            if exp[3] != "unlocked":
                 object.angle = exp[3]
 
         for item in exp:
-            if item == 'unlocked': object.unlocked = True
+            if item == "unlocked":
+                object.unlocked = True
 
         return object
 
     def to_sexpr(self) -> str:
         """This object does not have a direct S-Expression representation."""
-        raise NotImplementedError("This object does not have a direct S-Expression representation")
+        raise NotImplementedError(
+            "This object does not have a direct S-Expression representation"
+        )
 
 
 @dataclass
-class Coordinate():
+class Coordinate:
     """The ``coordinate`` token defines a three-dimentional position"""
 
     X: float = 0.0
@@ -110,7 +114,7 @@ class Coordinate():
         if not isinstance(exp, list) or len(exp) != 4:
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'xyz':
+        if exp[0] != "xyz":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
@@ -129,13 +133,13 @@ class Coordinate():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
-        return f'{indents}(xyz {self.X} {self.Y} {self.Z}){endline}'
+        indents = " " * indent
+        endline = "\n" if newline else ""
+        return f"{indents}(xyz {self.X} {self.Y} {self.Z}){endline}"
 
 
 @dataclass
-class ColorRGBA():
+class ColorRGBA:
     """The ``color`` token defines a RGBA color"""
 
     R: int = 0
@@ -171,7 +175,7 @@ class ColorRGBA():
         if not isinstance(exp, list) or len(exp) != 5:
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'color':
+        if exp[0] != "color":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
@@ -191,18 +195,19 @@ class ColorRGBA():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
         if self.precision is not None:
-            alpha = f'{self.A:.{self.precision}f}'
+            alpha = f"{self.A:.{self.precision}f}"
         else:
-            alpha = f'{self.A}'
+            alpha = f"{self.A}"
 
-        return f'{indents}(color {self.R} {self.G} {self.B} {alpha}){endline}'
+        return f"{indents}(color {self.R} {self.G} {self.B} {alpha}){endline}"
+
 
 @dataclass
-class Stroke():
+class Stroke:
     """The ``stroke`` token defines how the outlines of graphical objects are drawn.
 
     Documentation:
@@ -239,16 +244,19 @@ class Stroke():
         if not isinstance(exp, list) or len(exp) < 2:
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'stroke':
+        if exp[0] != "stroke":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
             if type(item) != type([]):
                 continue
-            if item[0] == 'width': object.width = item[1]
-            if item[0] == 'type':  object.type = item[1]
-            if item[0] == 'color': object.color = ColorRGBA.from_sexpr(item)
+            if item[0] == "width":
+                object.width = item[1]
+            if item[0] == "type":
+                object.type = item[1]
+            if item[0] == "color":
+                object.color = ColorRGBA.from_sexpr(item)
         return object
 
     def to_sexpr(self, indent=2, newline=True) -> str:
@@ -261,21 +269,21 @@ class Stroke():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
-        color = f' {self.color.to_sexpr()}' if self.color is not None else ''
-        the_type = f' (type {self.type})' if self.type is not None else ''
-        return f'{indents}(stroke (width {self.width}){the_type}{color}){endline}'
-
+        indents = " " * indent
+        endline = "\n" if newline else ""
+        color = f" {self.color.to_sexpr()}" if self.color is not None else ""
+        the_type = f" (type {self.type})" if self.type is not None else ""
+        return f"{indents}(stroke (width {self.width}){the_type}{color}){endline}"
 
 
 @dataclass
-class Font():
+class Font:
     """The ``font`` token attributes define how text is shown.
 
     Documentation:
         https://dev-docs.kicad.org/en/file-formats/sexpr-intro/#_text_effects
     """
+
     face: Optional[str] = None
     """The optional 'face' token indicates the font family. It should be a TrueType font family
     name or "KiCad Font" for the KiCad stroke font. (Kicad version 7)"""
@@ -321,22 +329,28 @@ class Font():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'font':
+        if exp[0] != "font":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
             if type(item) != type([]):
-                if item == 'bold': object.bold = True
-                if item == 'italic': object.italic = True
+                if item == "bold":
+                    object.bold = True
+                if item == "italic":
+                    object.italic = True
                 continue
-            if item[0] == 'face': object.face = item[1]
-            if item[0] == 'size':
+            if item[0] == "face":
+                object.face = item[1]
+            if item[0] == "size":
                 object.height = item[1]
                 object.width = item[2]
-            if item[0] == 'thickness': object.thickness = item[1]
-            if item[0] == 'line_spacing': object.lineSpacing = item[1]
-            if item[0] == 'color': object.color = ColorRGBA.from_sexpr(item)
+            if item[0] == "thickness":
+                object.thickness = item[1]
+            if item[0] == "line_spacing":
+                object.lineSpacing = item[1]
+            if item[0] == "color":
+                object.color = ColorRGBA.from_sexpr(item)
         return object
 
     def to_sexpr(self, indent=0, newline=False) -> str:
@@ -349,22 +363,29 @@ class Font():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
-        face_name, thickness, bold, italic, linespacing, color = '', '', '', '', '', ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
+        face_name, thickness, bold, italic, linespacing, color = "", "", "", "", "", ""
 
-        if self.face is not None:        face_name = f'(face "{dequote(self.face)}") '
-        if self.thickness is not None:   thickness = f' (thickness {self.thickness})'
-        if self.bold == True:            bold = ' bold'
-        if self.italic == True:          italic = ' italic'
-        if self.lineSpacing is not None: linespacing = f' (line_spacing {self.lineSpacing})'
-        if self.color is not None:       color = f' {self.color.to_sexpr()}'
+        if self.face is not None:
+            face_name = f'(face "{dequote(self.face)}") '
+        if self.thickness is not None:
+            thickness = f" (thickness {self.thickness})"
+        if self.bold == True:
+            bold = " bold"
+        if self.italic == True:
+            italic = " italic"
+        if self.lineSpacing is not None:
+            linespacing = f" (line_spacing {self.lineSpacing})"
+        if self.color is not None:
+            color = f" {self.color.to_sexpr()}"
 
-        expression = f'{indents}(font {face_name}(size {self.height} {self.width}){color}{thickness}{bold}{italic}{linespacing}){endline}'
+        expression = f"{indents}(font {face_name}(size {self.height} {self.width}){color}{thickness}{bold}{italic}{linespacing}){endline}"
         return expression
 
+
 @dataclass
-class Justify():
+class Justify:
     """The ``justify`` token defines the justification of a text object
 
     Documentation:
@@ -397,15 +418,18 @@ class Justify():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'justify':
+        if exp[0] != "justify":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
             # 'center' is the standard on vertical but not on horizontal in work sheets
-            if item == 'left' or item == 'right' or item == 'center': object.horizontally = item
-            if item == 'top' or item == 'bottom': object.vertically = item
-            if item == 'mirror': object.mirror = True
+            if item == "left" or item == "right" or item == "center":
+                object.horizontally = item
+            if item == "top" or item == "bottom":
+                object.vertically = item
+            if item == "mirror":
+                object.mirror = True
         return object
 
     def to_sexpr(self, indent=0, newline=False) -> str:
@@ -420,23 +444,31 @@ class Justify():
               and newline settings) if no justification is given. This will cause the text to be
               horizontally and vertically aligend
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        if self.horizontally is None and self.vertically is None and self.mirror == False:
-            return f'{indents}{endline}';
+        if (
+            self.horizontally is None
+            and self.vertically is None
+            and self.mirror == False
+        ):
+            return f"{indents}{endline}"
 
-        horizontally, vertically, mirror = '', '', ''
+        horizontally, vertically, mirror = "", "", ""
 
-        if self.horizontally is not None: horizontally = f' {self.horizontally}'
-        if self.vertically is not None: vertically = f' {self.vertically}'
-        if self.mirror: mirror = f' mirror'
+        if self.horizontally is not None:
+            horizontally = f" {self.horizontally}"
+        if self.vertically is not None:
+            vertically = f" {self.vertically}"
+        if self.mirror:
+            mirror = f" mirror"
 
-        expression = f'{indents}(justify{horizontally}{vertically}{mirror}){endline}'
+        expression = f"{indents}(justify{horizontally}{vertically}{mirror}){endline}"
         return expression
 
+
 @dataclass
-class Effects():
+class Effects:
     """All text objects can have an optional effects section that defines how the text is displayed.
 
     Documentation:
@@ -474,17 +506,22 @@ class Effects():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'effects':
+        if exp[0] != "effects":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
             if type(item) != type([]):
-                if item == 'hide': object.hide = True
-                else: continue
-            if item[0] == 'font': object.font = Font().from_sexpr(item)
-            if item[0] == 'justify': object.justify = Justify().from_sexpr(item)
-            if item[0] == 'href': object.href = item[1]
+                if item == "hide":
+                    object.hide = True
+                else:
+                    continue
+            if item[0] == "font":
+                object.font = Font().from_sexpr(item)
+            if item[0] == "justify":
+                object.justify = Justify().from_sexpr(item)
+            if item[0] == "href":
+                object.href = item[1]
         return object
 
     def to_sexpr(self, indent=0, newline=True) -> str:
@@ -497,19 +534,21 @@ class Effects():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        justify = f' {self.justify.to_sexpr()}' if self.justify.to_sexpr() != '' else ''
-        hide = f' hide' if self.hide else ''
-        href = f' (href "{dequote(self.href)}")' if self.href is not None else ''
+        justify = f" {self.justify.to_sexpr()}" if self.justify.to_sexpr() != "" else ""
+        hide = " (hide yes)" if self.hide else ""
+        href = f' (href "{dequote(self.href)}")' if self.href is not None else ""
 
-        expression =  f'{indents}(effects {self.font.to_sexpr()}{justify}{href}{hide}){endline}'
+        expression = (
+            f"{indents}(effects {self.font.to_sexpr()}{justify}{href}{hide}){endline}"
+        )
         return expression
 
 
 @dataclass
-class Net():
+class Net:
     """The ``net`` token defines the number and name of a net"""
 
     number: int = 0
@@ -535,7 +574,7 @@ class Net():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'net':
+        if exp[0] != "net":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
@@ -553,13 +592,14 @@ class Net():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
         return f'{indents}(net {self.number} "{dequote(self.name)}"){endline}'
 
+
 @dataclass
-class Group():
+class Group:
     """The ``group`` token defines a group of items.
 
     Documentation:
@@ -595,17 +635,19 @@ class Group():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'group':
+        if exp[0] != "group":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         object.name = exp[1]
         for item in exp:
             if type(item) != type([]):
-                if item == 'locked': object.locked = True
+                if item == "locked":
+                    object.locked = True
                 continue
-            if item[0] == 'id': object.id = item[1]
-            if item[0] == 'members':
+            if item[0] == "id":
+                object.id = item[1]
+            if item[0] == "members":
                 for member in item[1:]:
                     object.members.append(member)
         return object
@@ -620,26 +662,28 @@ class Group():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
-        locked = f' locked' if self.locked else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
+        locked = f" locked" if self.locked else ""
 
-        expression =  f'{indents}(group "{dequote(self.name)}"{locked} (id {self.id})\n'
-        expression += f'{indents}  (members\n'
+        expression = f'{indents}(group "{dequote(self.name)}"{locked} (id {self.id})\n'
+        expression += f"{indents}  (members\n"
         for member in self.members:
-            expression += f'{indents}    {member}\n'
+            expression += f"{indents}    {member}\n"
 
-        expression += f'{indents}  )\n'
-        expression += f'{indents}){endline}'
+        expression += f"{indents}  )\n"
+        expression += f"{indents}){endline}"
         return expression
 
+
 @dataclass
-class PageSettings():
+class PageSettings:
     """The ``paper`` token defines the drawing page size and orientation.
 
     Documentation:
         https://dev-docs.kicad.org/en/file-formats/sexpr-intro/#_page_settings
     """
+
     paperSize: str = "A4"
     """The ``paperSize`` token defines the size of the paper. Valid sizes are `A0`, `A1`, `A2`,
     `A3`, `A4`, `A5`, ``A``, ``B``, ``C``, ``D`` and ``E``. When using user-defines page sizes, set
@@ -672,20 +716,23 @@ class PageSettings():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'paper':
+        if exp[0] != "paper":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         object.paperSize = exp[1]
         if object.paperSize == "User":
             if len(exp) < 4:
-                raise Exception("PageSettings: Expected more data for paper type 'User'")
+                raise Exception(
+                    "PageSettings: Expected more data for paper type 'User'"
+                )
 
             object.width = exp[2]
             object.height = exp[3]
         for item in exp:
             if type(item) != type([]):
-                if item == 'portrait': object.portrait = True
+                if item == "portrait":
+                    object.portrait = True
                 continue
         return object
 
@@ -702,20 +749,23 @@ class PageSettings():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        width, height = '', ''
-        portrait = ' portrait' if self.portrait else ''
-        if self.paperSize == 'User':
+        width, height = "", ""
+        portrait = " portrait" if self.portrait else ""
+        if self.paperSize == "User":
             if self.width is None or self.height is None:
-                raise Exception("Page size set to 'User' but width or height not specified")
-            width = f' {self.width}'
-            height = f' {self.height}'
+                raise Exception(
+                    "Page size set to 'User' but width or height not specified"
+                )
+            width = f" {self.width}"
+            height = f" {self.height}"
         return f'{indents}(paper "{dequote(self.paperSize)}"{width}{height}{portrait}){endline}'
 
+
 @dataclass
-class TitleBlock():
+class TitleBlock:
     """The ``title_block`` token defines the contents of the title block.
 
     Documentation:
@@ -755,16 +805,21 @@ class TitleBlock():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'title_block':
+        if exp[0] != "title_block":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
-            if item[0] == 'title': object.title = item[1]
-            if item[0] == 'date': object.date = item[1]
-            if item[0] == 'rev': object.revision = item[1]
-            if item[0] == 'company': object.company = item[1]
-            if item[0] == 'comment': object.comments.update({item[1]: item[2]})
+            if item[0] == "title":
+                object.title = item[1]
+            if item[0] == "date":
+                object.date = item[1]
+            if item[0] == "rev":
+                object.revision = item[1]
+            if item[0] == "company":
+                object.company = item[1]
+            if item[0] == "comment":
+                object.comments.update({item[1]: item[2]})
         return object
 
     def to_sexpr(self, indent: int = 2, newline: bool = True) -> str:
@@ -777,10 +832,10 @@ class TitleBlock():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        expression =  f'{indents}(title_block\n'
+        expression = f"{indents}(title_block\n"
         if self.title is not None:
             expression += f'{indents}  (title "{dequote(self.title)}")\n'
 
@@ -795,11 +850,12 @@ class TitleBlock():
 
         for number, comment in self.comments.items():
             expression += f'{indents}  (comment {number} "{dequote(comment)}")\n'
-        expression += f'{indents}){endline}'
+        expression += f"{indents}){endline}"
         return expression
 
+
 @dataclass
-class Property():
+class Property:
     """The ``property`` token defines a symbol property when used inside a ``symbol`` definition.
 
     Documentation:
@@ -826,9 +882,11 @@ class Property():
 
     showName: bool = False
     """The ``show_name`` token defines if the property name is visibly shown. Used for netclass
-    labels.
+    labels."""
 
-    Available since KiCad v7"""
+    do_not_autoplace: bool = False
+    """The ``do_not_autoplace`` token defines if the property should be ignored during
+    auto-placement."""
 
     @classmethod
     def from_sexpr(cls, exp: list) -> Property:
@@ -847,17 +905,23 @@ class Property():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'property':
+        if exp[0] != "property":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         object.key = exp[1]
         object.value = exp[2]
         for item in exp[3:]:
-            if item[0] == 'id': object.id = item[1]
-            if item[0] == 'at': object.position = Position().from_sexpr(item)
-            if item[0] == 'effects': object.effects = Effects().from_sexpr(item)
-            if item[0] == 'show_name': object.showName = True
+            if item[0] == "id":
+                object.id = item[1]
+            if item[0] == "at":
+                object.position = Position().from_sexpr(item)
+            if item[0] == "effects":
+                object.effects = Effects().from_sexpr(item)
+            if item[0] == "show_name":
+                object.showName = True
+            if item[0] == "do_not_autoplace":
+                object.do_not_autoplace = True
         return object
 
     def to_sexpr(self, indent: int = 4, newline: bool = True) -> str:
@@ -870,23 +934,24 @@ class Property():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        posA = f' {self.position.angle}' if self.position.angle is not None else ''
-        id = f' (id {self.id})' if self.id is not None else ''
-        sn = ' (show_name)' if self.showName else ''
+        posA = f" {self.position.angle}" if self.position.angle is not None else ""
+        id = f" (id {self.id})" if self.id is not None else ""
+        sn = " (show_name)" if self.showName else ""
 
-        expression =  f'{indents}(property "{dequote(self.key)}" "{dequote(self.value)}"{id} (at {self.position.X} {self.position.Y}{posA}){sn}'
+        expression = f'{indents}(property "{dequote(self.key)}" "{dequote(self.value)}"{id} (at {self.position.X} {self.position.Y}{posA}){sn}'
         if self.effects is not None:
-            expression += f'\n{self.effects.to_sexpr(indent+2)}'
-            expression += f'{indents}){endline}'
+            expression += f"\n{self.effects.to_sexpr(indent + 2)}"
+            expression += f"{indents}){endline}"
         else:
-            expression += f'){endline}'
+            expression += f"){endline}"
         return expression
 
+
 @dataclass
-class RenderCachePolygon():
+class RenderCachePolygon:
     """A polygon used by the ``render_cache`` token
 
     Used since KiCad v7
@@ -912,12 +977,12 @@ class RenderCachePolygon():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'polygon':
+        if exp[0] != "polygon":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
-            if item[0] == 'pts':
+            if item[0] == "pts":
                 for point in item[1:]:
                     object.pts.append(Position.from_sexpr(point))
         return object
@@ -932,26 +997,27 @@ class RenderCachePolygon():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        expression = f'{indents}(polygon\n'
-        expression += f'{indents}  (pts'
+        expression = f"{indents}(polygon\n"
+        expression += f"{indents}  (pts"
 
         for i, point in enumerate(self.pts):
             if i % 4 == 0:
-                expression += f'\n'
-            expression += f'{indents}    '
-            expression += f'(xy {point.X} {point.Y})'
+                expression += f"\n"
+            expression += f"{indents}    "
+            expression += f"(xy {point.X} {point.Y})"
 
         # NOTE: This expects the length of the points array to be a multiple of four to get the
         #       formatting right.
-        expression += f'\n{indents}  )\n'
-        expression += f'{indents}){endline}'
+        expression += f"\n{indents}  )\n"
+        expression += f"{indents}){endline}"
         return expression
 
+
 @dataclass
-class RenderCache():
+class RenderCache:
     """The ``render_cache`` token defines a cache for none-standard fonts.
 
     Used since KiCad v7
@@ -986,14 +1052,15 @@ class RenderCache():
         if not isinstance(exp, list) or len(exp) < 3:
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'render_cache':
+        if exp[0] != "render_cache":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         object.text = exp[1]
         object.id = exp[2]
         for item in exp:
-            if item[0] == 'polygon': object.polygons.append(RenderCachePolygon.from_sexpr(item))
+            if item[0] == "polygon":
+                object.polygons.append(RenderCachePolygon.from_sexpr(item))
         return object
 
     def to_sexpr(self, indent: int = 4, newline: bool = True) -> str:
@@ -1006,17 +1073,18 @@ class RenderCache():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
         expression = f'{indents}(render_cache "{dequote(self.text)}" {self.id}\n'
         for poly in self.polygons:
-            expression += poly.to_sexpr(indent+2)
-        expression += f'{indents}){endline}'
+            expression += poly.to_sexpr(indent + 2)
+        expression += f"{indents}){endline}"
         return expression
 
+
 @dataclass
-class Fill():
+class Fill:
     """The ``fill`` token defines how schematic and symbol graphical items are filled
 
     Documentation:
@@ -1052,13 +1120,15 @@ class Fill():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'fill':
+        if exp[0] != "fill":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
-            if item[0] == 'type': object.type = item[1]
-            if item[0] == 'color': object.color = ColorRGBA().from_sexpr(item)
+            if item[0] == "type":
+                object.type = item[1]
+            if item[0] == "color":
+                object.color = ColorRGBA().from_sexpr(item)
         return object
 
     def to_sexpr(self, indent: int = 4, newline: bool = True) -> str:
@@ -1071,15 +1141,16 @@ class Fill():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
-        color = f' {self.color.to_sexpr()}' if self.color is not None else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
+        color = f" {self.color.to_sexpr()}" if self.color is not None else ""
 
-        expression = f'{indents}(fill (type {self.type}){color}){endline}'
+        expression = f"{indents}(fill (type {self.type}){color}){endline}"
         return expression
 
+
 @dataclass
-class Image():
+class Image:
     """The ``image`` token defines an image embedded into the file
 
     Documentation:
@@ -1120,16 +1191,20 @@ class Image():
         if not isinstance(exp, list):
             raise Exception("Expression does not have the correct type")
 
-        if exp[0] != 'image':
+        if exp[0] != "image":
             raise Exception("Expression does not have the correct type")
 
         object = cls()
         for item in exp:
-            if item[0] == 'at': object.position = Position().from_sexpr(item)
-            if item[0] == 'scale': object.scale = item[1]
-            if item[0] == 'uuid': object.uuid = item[1]
-            if item[0] == 'layer': object.layer = item[1]
-            if item[0] == 'data':
+            if item[0] == "at":
+                object.position = Position().from_sexpr(item)
+            if item[0] == "scale":
+                object.scale = item[1]
+            if item[0] == "uuid":
+                object.uuid = item[1]
+            if item[0] == "layer":
+                object.layer = item[1]
+            if item[0] == "data":
                 for b64part in item[1:]:
                     object.data.append(b64part)
         return object
@@ -1144,27 +1219,30 @@ class Image():
         Returns:
             - str: S-Expression of this object
         """
-        indents = ' '*indent
-        endline = '\n' if newline else ''
+        indents = " " * indent
+        endline = "\n" if newline else ""
 
-        scale = f' (scale {self.scale})' if self.scale is not None else ''
-        layer = f' (layer "{dequote(self.layer)}")' if self.layer is not None else ''
+        scale = f" (scale {self.scale})" if self.scale is not None else ""
+        layer = f' (layer "{dequote(self.layer)}")' if self.layer is not None else ""
 
-        expression =  f'{indents}(image (at {self.position.X} {self.position.Y}){layer}{scale}\n'
+        expression = (
+            f"{indents}(image (at {self.position.X} {self.position.Y}){layer}{scale}\n"
+        )
         if self.uuid is not None:
-            expression += f'{indents}  (uuid {self.uuid})\n'
-        expression += f'{indents}  (data\n'
+            expression += f"{indents}  (uuid {self.uuid})\n"
+        expression += f"{indents}  (data\n"
         for b64part in self.data:
-            expression += f'{indents}    {b64part}\n'
-        expression += f'{indents}  )\n'
-        expression += f'{indents}){endline}'
+            expression += f"{indents}    {b64part}\n"
+        expression += f"{indents}  )\n"
+        expression += f"{indents}){endline}"
         return expression
+
 
 @dataclass
 class ProjectInstance(ABC):
     """The ``instances`` token defines a project instance and serves as an abstract base class for
     symbol and hierarchical sheet project instances.
-    
+
     Available since KiCad v7."""
 
     name: str = ""
