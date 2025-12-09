@@ -511,11 +511,8 @@ class Effects:
 
         object = cls()
         for item in exp:
-            if type(item) != type([]):
-                if item == "hide" or item[0] == "hide":
-                    object.hide = True
-                else:
-                    continue
+            if item[0] == "hide":
+                object.hide = item[1] == "yes"
             if item[0] == "font":
                 object.font = Font().from_sexpr(item)
             if item[0] == "justify":
@@ -940,8 +937,9 @@ class Property:
         posA = f" {self.position.angle}" if self.position.angle is not None else ""
         id = f" (id {self.id})" if self.id is not None else ""
         sn = " (show_name)" if self.showName else ""
+        autoplace = (" (do_not_autoplace)" if self.do_not_autoplace else "")
 
-        expression = f'{indents}(property "{dequote(self.key)}" "{dequote(self.value)}"{id} (at {self.position.X} {self.position.Y}{posA}){sn}'
+        expression = f'{indents}(property "{dequote(self.key)}" "{dequote(self.value)}"{id} (at {self.position.X} {self.position.Y}{posA}){sn}{autoplace}'
         if self.effects is not None:
             expression += f"\n{self.effects.to_sexpr(indent + 2)}"
             expression += f"{indents}){endline}"
