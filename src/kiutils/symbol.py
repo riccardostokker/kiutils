@@ -24,6 +24,7 @@ from kiutils.items.syitems import *
 from kiutils.utils import sexpr
 from kiutils.utils.strings import dequote
 from kiutils.misc.config import KIUTILS_CREATE_NEW_VERSION_STR
+from pathlib import Path
 
 
 @dataclass
@@ -574,7 +575,9 @@ class SymbolLib:
     ``self.from_file()`` is used. Allows the use of ``self.to_file()`` without parameters."""
 
     @classmethod
-    def from_file(cls, filepath: str, encoding: Optional[str] = None) -> SymbolLib:
+    def from_file(
+        cls, filepath: str | Path, encoding: Optional[str] = None
+    ) -> SymbolLib:
         """Load a symbol library directly from a KiCad footprint file (`.kicad_sym`) and sets the
         ``self.filePath`` attribute to the given file path.
 
@@ -628,7 +631,7 @@ class SymbolLib:
                 object.symbols.append(Symbol().from_sexpr(item))
         return object
 
-    def to_file(self, filepath=None, encoding: Optional[str] = None):
+    def to_file(self, filepath=None, encoding: str = "utf-8"):
         """Save the object to a file in S-Expression format
 
         Args:
